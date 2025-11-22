@@ -586,6 +586,28 @@ export default function Users() {
                                 ) : (
                                     <p className="text-sm text-slate-500 py-3">This user has not referred any customers yet.</p>
                                 )}
+                                {/* --- Product Permissions Section (NEW) --- */}
+                                <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 pt-4 border-b border-slate-100 pb-2">
+                                    Product Permissions ({expandedUserDetail.products?.length || 0})
+                                </h4>
+                                {expandedUserDetail.products && expandedUserDetail.products.length > 0 ? (
+                                    <div className="flex flex-wrap gap-4">
+                                        {expandedUserDetail.products.map((product) => (
+                                            <span 
+                                                key={product.id}
+                                                className={`inline-flex items-center px-3 py-1 text-sm font-medium rounded-full ${
+                                                    product.has_access 
+                                                        ? 'bg-green-100 text-green-800' 
+                                                        : 'bg-red-100 text-red-800'
+                                                }`}
+                                            >
+                                                {product.name}: {product.has_access ? 'Allowed' : 'Denied'}
+                                            </span>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-slate-500 py-3">No product permissions defined for this user.</p>
+                                )}
                                 {/* --------------------------------------------- */}
 
                               </div>
