@@ -6,7 +6,7 @@ export default function DashboardLayout() {
     <div className="flex h-screen bg-slate-50">
       <Sidebar />
       <div className="flex-1 overflow-auto">
-        <div className="p-8">
+        <div className="p-8 mt-10 md:mt-0">
           <Outlet />
         </div>
       </div>
