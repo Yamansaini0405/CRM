@@ -3,6 +3,10 @@
 
 @custom-variant dark (&:is(.dark *));
 
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 :root {
   /* Updated color palette to professional whitish theme with blue accent */
   --background: oklch(0.98 0 0);

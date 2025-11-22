@@ -4,8 +4,40 @@ import { useState, useEffect } from 'react';
 import { X, Loader, Trash2, Plus, Image as ImageIcon } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
+// Helper component for the full-screen image modal
+const ImageModal = ({ imageUrl, onClose }) => {
+  if (!imageUrl) return null;
+
+  return (
+    <div 
+      className="fixed inset-0 bg-black/20 backdrop-blur-sm  flex items-center justify-center z-50 p-4" 
+      onClick={onClose}
+    >
+      <div 
+        className="relative bg-white rounded-lg shadow-2xl max-w-2xl max-h-[90vh] p-4" 
+        onClick={(e) => e.stopPropagation()} // Prevent modal close when clicking inside
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-2 right-2 p-1 bg-white hover:bg-slate-100 rounded-full transition-colors z-10"
+          title="Close"
+        >
+          <X size={24} className="text-slate-900" />
+        </button>
+        <img 
+          src={imageUrl} 
+          alt="Bank Logo" 
+          className="max-w-full max-h-[85vh] object-contain" 
+        />
+      </div>
+    </div>
+  );
+};
+
+
 // Helper component for Bank List Row
-const BankRow = ({ bank, onDelete, API_BASE_URL, tokens }) => {
+// onLogoClick is a new prop
+const BankRow = ({ bank, onDelete, onLogoClick, API_BASE_URL, tokens }) => {
   const logoUrl = bank.logo ? `${bank.logo}` : '/placeholder-bank.svg';
 
   return (
@@ -14,8 +46,18 @@ const BankRow = ({ bank, onDelete, API_BASE_URL, tokens }) => {
       <td className="px-6 py-4 text-sm text-slate-900 font-medium">{bank.name}</td>
       <td className="px-6 py-4 text-sm">
         {bank.logo ? (
-          // Display logo preview
-          <img src={logoUrl} alt={`${bank.name} logo`} className="h-10 w-auto rounded object-contain border border-slate-200" />
+          // Make the image a clickable button to open the modal
+          <button 
+            onClick={() => onLogoClick(logoUrl)} 
+            className="p-0 border-none bg-transparent focus:outline-none"
+            title={`View ${bank.name} Logo`}
+          >
+            <img 
+              src={logoUrl} 
+              alt={`${bank.name} logo`} 
+              className="h-10 w-auto rounded object-contain border border-slate-200 cursor-pointer hover:opacity-75 transition-opacity" 
+            />
+          </button>
         ) : (
           <span className="text-slate-500 text-sm">No Logo</span>
         )}
@@ -48,9 +90,24 @@ export default function BankManagement() {
   const [banks, setBanks] = useState([]);
   const [listLoading, setListLoading] = useState(true);
   const [listError, setListError] = useState('');
+
+  // --- Modal State (NEW) ---
+  const [modalImage, setModalImage] = useState(null);
   
   const { tokens } = useAuth();
   const API_BASE_URL = import.meta.env.VITE_BASE_URL || '';
+
+  // --- Modal Handlers (NEW) ---
+  const openImageModal = (url) => {
+    // Only open if it's a real logo, not the placeholder SVG
+    if (!url.includes('placeholder-bank.svg')) {
+      setModalImage(url);
+    }
+  }
+
+  const closeImageModal = () => {
+    setModalImage(null);
+  }
 
   // --- Effects and Fetching ---
 
@@ -131,6 +188,7 @@ export default function BankManagement() {
       setFormData({ name: '', logo: null });
       setPreview('');
       fetchBanks();
+      // Removed: window.location.reload(); as fetchBanks should be sufficient
       
     } catch (err) {
       setCreationError(err.message);
@@ -219,7 +277,7 @@ export default function BankManagement() {
         </form>
       </div>
       
-      ---
+      <hr className="border-slate-200" />
       
       {/* --- 2. Bank List Section --- */}
       <div className="bg-white rounded-lg shadow p-8">
@@ -256,6 +314,10 @@ export default function BankManagement() {
                     key={bank.id} 
                     bank={bank} 
                     onDelete={handleDelete} 
+                    onLogoClick={openImageModal} // <-- NEW: Pass the handler
+                    // Retaining original, unused props for signature compatibility
+                    API_BASE_URL={API_BASE_URL} 
+                    tokens={tokens}
                   />
                 ))}
               </tbody>
@@ -263,6 +325,9 @@ export default function BankManagement() {
           </div>
         )}
       </div>
+
+      {/* --- 3. Image Modal Renderer (NEW) --- */}
+      <ImageModal imageUrl={modalImage} onClose={closeImageModal} />
     </div>
   );
 }

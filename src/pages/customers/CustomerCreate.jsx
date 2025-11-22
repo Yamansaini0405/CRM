@@ -220,7 +220,7 @@ export default function CustomerCreate() {
             </button>
             <button
               type="button"
-              onClick={() => navigate('/dashboard/customers')}
+              onClick={() => navigate('/customers')}
               className="flex-1 px-6 py-2 bg-slate-200 hover:bg-slate-300 text-slate-900 font-medium rounded-lg transition-colors"
             >
               Cancel

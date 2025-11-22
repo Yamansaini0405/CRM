@@ -124,7 +124,7 @@ export default function TermsAndConditionsPage() {
     }
     
     return (
-        <div className="space-y-6 max-w-4xl mx-auto">
+        <div className="space-y-6 max-w-full mx-auto">
             <h1 className="text-3xl font-bold text-slate-900">Company Terms & Conditions</h1>
             
             {error && (
@@ -135,8 +135,8 @@ export default function TermsAndConditionsPage() {
             
             {/* Action Bar */}
             <div className="flex justify-between items-center p-4 bg-white rounded-lg shadow-sm">
-                <p className="text-sm text-slate-600">
-                    Last Updated: **{formatDate(updatedAt)}**
+                <p className="text-md text-slate-900 font-semibold">
+                    Last Updated: {formatDate(updatedAt)}
                 </p>
                 
                 {isEditing ? (

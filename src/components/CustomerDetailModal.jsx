@@ -6,7 +6,7 @@ export default function CustomerDetailModal({ customer, onClose, formatDate }) {
 
   // Function to safely display monetary values
   const formatCurrency = (amount) => {
-      return `$${parseFloat(amount || 0).toFixed(2)}`;
+      return `Rs ${parseFloat(amount || 0).toFixed(2)}`;
   };
   
   // Function to render a single detail row
@@ -18,8 +18,8 @@ export default function CustomerDetailModal({ customer, onClose, formatDate }) {
   );
 
   return (
-    <div className="fixed inset-0 bg-slate-900 bg-opacity-75 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto transform transition-all duration-300">
+    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm  flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transform transition-all duration-300 no-scrollbar">
         
         {/* Modal Header */}
         <div className="sticky top-0 bg-white p-6 border-b border-slate-200 flex justify-between items-center">

@@ -144,7 +144,7 @@ export default function CustomerView() {
           <p className="text-slate-600 mt-1">Manage your customer relationships</p>
         </div>
         <Link
-          to="/dashboard/customers/create"
+          to="/customers/create"
           className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
         >
           <Plus size={20} />

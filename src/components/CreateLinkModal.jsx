@@ -125,8 +125,8 @@ export default function CreateLinkModal({ onClose, onSuccess }) {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto no-scrollbar">
         <div className="sticky top-0 flex items-center justify-between p-6 border-b border-slate-200 bg-white">
           <h2 className="text-xl font-bold text-slate-900">Create Link</h2>
           <button
