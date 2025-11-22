@@ -6,22 +6,25 @@ import { useAuth } from '../contexts/AuthContext';
 
 export default function CreateLinkModal({ onClose, onSuccess }) {
   const [formData, setFormData] = useState({
-    bank: '',
+    bank: '', // Will hold the selected bank ID (as a string)
     product: '',
     name: '',
     user_id: '',
     password: '',
     utm_link: '',
-    // --- New/Updated Fields ---
-    description: '', // Added description field
-    image: '',       // Keeping image as empty string, will send as string
-    // --------------------------
+    description: '',
+    image: '',
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [banks, setBanks] = useState([]);
   const [products, setProducts] = useState([]);
   const [loadingOptions, setLoadingOptions] = useState(true);
+  
+  // --- NEW STATE FOR CUSTOM BANK DROPDOWN ---
+  const [isBankDropdownOpen, setIsBankDropdownOpen] = useState(false);
+  // ------------------------------------------
+
   const { tokens } = useAuth();
 
   const API_BASE_URL = import.meta.env.VITE_BASE_URL || '';
@@ -59,6 +62,19 @@ export default function CreateLinkModal({ onClose, onSuccess }) {
     });
   };
 
+  // --- NEW HANDLER FOR CUSTOM BANK SELECTION ---
+  const handleBankSelect = (bankId) => {
+    setFormData(prev => ({
+        ...prev,
+        bank: bankId.toString(), // Store as string to match other form fields
+    }));
+    setIsBankDropdownOpen(false); // Close the dropdown after selection
+  };
+  
+  // Helper to find the currently selected bank object for display
+  const selectedBank = banks.find(b => b.id === parseInt(formData.bank));
+  // ------------------------------------------
+
   // --- 2. Handle Form Submission (POST Request) ---
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -70,18 +86,17 @@ export default function CreateLinkModal({ onClose, onSuccess }) {
     setError('');
     setLoading(true);
 
-    // Prepare the request body, ensuring IDs are integers and other fields are sent as strings
+    // Prepare the request body, ensuring IDs are integers
     const requestBody = {
+      // Note: formData.bank is a string, so we must parse it to an integer for the API
       bank: parseInt(formData.bank),
       product: parseInt(formData.product),
       name: formData.name,
-      // Send user_id, password, utm_link, description, and image as strings.
-      // If the field is optional and the API expects an empty string instead of null, this is correct.
       user_id: formData.user_id,
       password: formData.password,
       utm_link: formData.utm_link,
-      description: formData.description, // Included new field
-      // image: formData.image,             // Sent as string URL
+      description: formData.description,
+
     };
 
     try {
@@ -144,26 +159,57 @@ export default function CreateLinkModal({ onClose, onSuccess }) {
             </div>
           )}
 
-          {/* Bank Select */}
+          {/* Bank Select (CUSTOM DROPDOWN WITH LOGO) */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">Bank *</label>
-            <select
-              name="bank"
-              value={formData.bank}
-              onChange={handleChange}
-              required
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-            >
-              <option value="">Select a bank</option>
-              {banks.map((b) => (
-                <option key={b.id} value={b.id}>
-                  {b.name}
-                </option>
-              ))}
-            </select>
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsBankDropdownOpen(!isBankDropdownOpen)}
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-left flex items-center justify-between"
+                aria-expanded={isBankDropdownOpen}
+              >
+                {selectedBank ? (
+                  <span className="flex items-center gap-3">
+                    <img src={selectedBank.logo} alt={`${selectedBank.name} logo`} className="h-6 w-auto object-contain" />
+                    <span className="text-slate-900 font-medium">{selectedBank.name}</span>
+                  </span>
+                ) : (
+                  <span className="text-slate-500">Select a bank</span>
+                )}
+                <svg 
+                  className={`w-4 h-4 text-slate-500 transform transition-transform ${isBankDropdownOpen ? 'rotate-180' : 'rotate-0'}`} 
+                  fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </button>
+
+              {isBankDropdownOpen && (
+                <div 
+                  className="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+                >
+                  <ul className="py-1">
+                    {banks.map((b) => (
+                      <li key={b.id}>
+                        <button
+                          type="button"
+                          onClick={() => handleBankSelect(b.id)}
+                          className="w-full text-left px-4 py-2 hover:bg-blue-50 flex items-center gap-3 transition-colors"
+                        >
+                          <img src={b.logo} alt={`${b.name} logo`} className="h-6 w-auto object-contain" />
+                          <span className="text-slate-900">{b.name}</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+            {/* We no longer need the hidden input for 'bank' since the button/custom UI handles the click and updates formData.bank */}
           </div>
 
-          {/* Product Select */}
+          {/* Product Select (Standard Dropdown remains) */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">Product *</label>
             <select
@@ -236,17 +282,7 @@ export default function CreateLinkModal({ onClose, onSuccess }) {
           </div>
 
           {/* Image URL */}
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-2">Image URL</label>
-            <input
-              type="url"
-              name="image"
-              value={formData.image}
-              onChange={handleChange}
-              placeholder="https://example.com/image.jpg"
-              className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
+
           
           {/* Description (NEW FIELD) */}
           <div>

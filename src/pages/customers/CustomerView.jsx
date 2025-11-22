@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext.jsx';
-import { Plus, Eye, Edit2, Trash2, Loader, ArrowUp, ArrowDown } from 'lucide-react';
+import { Plus, Eye, Edit2, Trash2, Loader, ArrowUp, ArrowDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import CustomerDetailModal from '../../components/CustomerDetailModal.jsx';
 
 
@@ -11,6 +11,99 @@ const formatDate = (dateString) => {
   const options = { year: 'numeric', month: 'short', day: 'numeric' };
   return new Date(dateString).toLocaleDateString(undefined, options);
 };
+
+// --- NEW: Slider Component ---
+const Slider = ({ slides }) => {
+    const [currentIndex, setCurrentIndex] = useState(0);
+
+    // Auto-rotate the slider every 5 seconds
+    useEffect(() => {
+        if (slides.length <= 1) return;
+        const interval = setInterval(() => {
+            setCurrentIndex(prevIndex => (prevIndex === slides.length - 1 ? 0 : prevIndex + 1));
+        }, 2000); 
+
+        return () => clearInterval(interval);
+    }, [slides.length]);
+
+    const goToPrevious = () => {
+        setCurrentIndex(prevIndex => (prevIndex === 0 ? slides.length - 1 : prevIndex - 1));
+    };
+
+    const goToNext = () => {
+        setCurrentIndex(prevIndex => (prevIndex === slides.length - 1 ? 0 : prevIndex + 1));
+    };
+
+    if (slides.length === 0) return null;
+
+    const currentSlide = slides[currentIndex];
+
+    return (
+        <div className="relative w-full h-72 bg-slate-100 rounded-xl shadow-lg overflow-hidden mb-6">
+            {/* Image and Caption */}
+            <div className="w-full h-full">
+                <img 
+                    src={currentSlide.image} 
+                    alt={currentSlide.caption} 
+                    className="w-full h-full object-cover" 
+                />
+                <div className="absolute inset-0  bg-opacity-30 flex items-end p-6">
+                    <div className="text-white">
+                        {currentSlide.caption && (
+                             <p className="text-xl font-bold">{currentSlide.caption}</p>
+                        )}
+                        {currentSlide.image && (
+                             <a 
+                                href={currentSlide.image} 
+                                target="_blank" 
+                                rel="noopener noreferrer" 
+                                className="text-sm underline hover:text-blue-200 transition-colors"
+                             >
+                                View Link
+                             </a>
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Navigation Buttons */}
+            {slides.length > 1 && (
+                <>
+                    <button 
+                        onClick={goToPrevious}
+                        className="absolute top-1/2 left-4 transform -translate-y-1/2 bg-white/70 p-2 rounded-full hover:bg-white transition-colors"
+                        title="Previous"
+                    >
+                        <ChevronLeft size={24} />
+                    </button>
+                    <button 
+                        onClick={goToNext}
+                        className="absolute top-1/2 right-4 transform -translate-y-1/2 bg-white/70 p-2 rounded-full hover:bg-white transition-colors"
+                        title="Next"
+                    >
+                        <ChevronRight size={24} />
+                    </button>
+                </>
+            )}
+
+            {/* Dots Indicator */}
+            <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-2">
+                {slides.map((_, index) => (
+                    <button
+                        key={index}
+                        onClick={() => setCurrentIndex(index)}
+                        className={`h-2 w-2 rounded-full transition-all ${
+                            index === currentIndex ? 'bg-white w-4' : 'bg-white/50 hover:bg-white/80'
+                        }`}
+                        title={`Go to slide ${index + 1}`}
+                    />
+                ))}
+            </div>
+        </div>
+    );
+};
+// --- END Slider Component ---
+
 
 export default function CustomerView() {
   const [customers, setCustomers] = useState([]);
@@ -25,15 +118,46 @@ export default function CustomerView() {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'ascending' });
 
+  // 🆕 NEW: State for Sliders
+  const [sliders, setSliders] = useState([]);
+  const [sliderLoading, setSliderLoading] = useState(true);
+  // -------------------------
+
   const { tokens } = useAuth();
   const API_BASE_URL = import.meta.env.VITE_BASE_URL || ""
 
   useEffect(() => {
     fetchCustomers();
+    fetchSliders(); // 🆕 NEW: Fetch sliders on mount
   }, []);
 
+  // 🆕 NEW: Fetch Sliders Function
+  const fetchSliders = async () => {
+    try {
+        setSliderLoading(true);
+        const response = await fetch(`${API_BASE_URL}/api/homepage-sliders/`, {
+            headers: { Authorization: `Bearer ${tokens?.access}` },
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch sliders');
+        const data = await response.json();
+        // Filter for active slides and sort by order (if order is available)
+        const activeSliders = data
+            .filter(slide => slide.is_active)
+            .sort((a, b) => a.order - b.order); 
+
+        setSliders(activeSliders);
+    } catch (err) {
+        console.error("Slider fetch error:", err);
+        // We won't set a visible error for sliders, just log it.
+        setSliders([]); 
+    } finally {
+        setSliderLoading(false);
+    }
+  };
+  // -------------------------
+
   const fetchCustomers = async () => {
-    // ... (fetchCustomers function remains the same) ...
     setLoading(true);
     try {
       const response = await fetch(`${API_BASE_URL}/api/customers/management/`, {
@@ -54,7 +178,6 @@ export default function CustomerView() {
   };
 
   const handleDelete = async (id) => {
-    // ... (handleDelete function remains the same) ...
     if (!confirm('Are you sure you want to delete this customer?')) return;
 
     try {
@@ -84,7 +207,7 @@ export default function CustomerView() {
     setSelectedCustomer(null);
   };
 
-  // ⬇️ NEW: Sorting and Filtering Logic using useMemo
+  // ⬇️ Sorting and Filtering Logic remains the same
   const sortedAndFilteredCustomers = useMemo(() => {
     let sortableCustomers = [...customers];
     const lowerCaseSearch = searchTerm.toLowerCase();
@@ -134,7 +257,7 @@ export default function CustomerView() {
     }
     return <ArrowDown size={14} className="ml-1" />;
   };
-  // ⬆️ END NEW LOGIC
+  // ⬆️ END Sorting and Filtering Logic
 
   return (
     <div>
@@ -152,7 +275,17 @@ export default function CustomerView() {
         </Link>
       </div>
 
-      {/* 🔍 NEW: Search Input */}
+      {/* 🆕 NEW: Slider Rendering */}
+      {sliderLoading ? (
+        <div className="flex items-center justify-center h-72 mb-6 bg-slate-50 rounded-xl">
+            <Loader className="animate-spin text-blue-600" size={32} />
+        </div>
+      ) : (
+        <Slider slides={sliders} />
+      )}
+      {/* ------------------------- */}
+
+      {/* 🔍 Search Input */}
       <div className="mb-6">
         <input
             type="text"

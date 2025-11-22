@@ -5,7 +5,7 @@ import { X, Copy, ExternalLink } from 'lucide-react';
 export default function LinkDetailsModal({ link, onClose, onCopy, copied }) {
   return (
     <div className="fixed inset-0 bg-black/20 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto no-scrollbar">
         <div className="sticky top-0 flex items-center justify-between p-6 border-b border-slate-200 bg-white">
           <h2 className="text-xl font-bold text-slate-900">Link Details</h2>
           <button

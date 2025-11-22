@@ -13,6 +13,7 @@ import CustomerEdit from './pages/customers/CustomerEdit'
 import BankManagement from './pages/BankManagement'
 import ProductManagement from './pages/ProductManagement'
 import TermsAndConditionsPage from './pages/TermsAndConditionsPage'
+import SliderManagement from './pages/SliderManagement'
 
 function ProtectedRoute({ children, requiredRole }) {
   const { user, loading } = useAuth();
@@ -47,6 +48,7 @@ function App() {
         <Route path='create-product' element={<ProductManagement/>}/>
         <Route path='/terms-and-conditions' element={<TermsAndConditionsPage/>}/>
         <Route path="users" element={<ProtectedRoute requiredRole="ADMIN"><Users /></ProtectedRoute>} />
+        <Route path='slider-management' element={<ProtectedRoute requiredRole="ADMIN"><SliderManagement/></ProtectedRoute>} />
       </Route>
       <Route path="/" element={<Navigate to="/login" replace />} />
     </Routes>

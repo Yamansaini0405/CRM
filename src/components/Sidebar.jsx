@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Users, LinkIcon, UserPlus, ChevronDown, Menu, X, Banknote, Building, Building2, Box } from 'lucide-react';
+import { Users, LinkIcon, UserPlus, ChevronDown, Menu, X, Banknote, Building, Building2, Box, Settings } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Sidebar() {
@@ -54,6 +54,15 @@ export default function Sidebar() {
           label: 'Users',
           icon: UserPlus,
           path: '/users',
+        },
+      ]
+      : []),
+      ...(user?.role === 'ADMIN'
+      ? [
+        {
+          label: 'Slider Management',
+          icon: Settings,
+          path: '/slider-management',
         },
       ]
       : []),
